@@ -2,51 +2,76 @@ package main;
 
 public class QuantityMeasurementApp {
 
-    // Inner class to represent Feet measurement
+    // ----------- FEET CLASS -----------
     public static class Feet {
         private final double value;
 
-        // Constructor
         public Feet(double value) {
             this.value = value;
         }
 
-        // Override equals() method
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
 
-            // 1. Same reference check
-            if (this == obj) {
-                return true;
-            }
-
-            // 2. Null check
-            if (obj == null) {
-                return false;
-            }
-
-            // 3. Type check
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-
-            // 4. Cast and compare values
             Feet other = (Feet) obj;
             return Double.compare(this.value, other.value) == 0;
         }
 
-        // Optional but recommended when overriding equals
         @Override
         public int hashCode() {
             return Double.hashCode(value);
         }
     }
 
-    // Main method
-    public static void main(String[] args) {
-        Feet f1 = new Feet(1.0);
-        Feet f2 = new Feet(1.0);
+    // ----------- INCHES CLASS -----------
+    public static class Inches {
+        private final double value;
 
-        System.out.println("Are equal? " + f1.equals(f2));
+        public Inches(double value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+
+            Inches other = (Inches) obj;
+            return Double.compare(this.value, other.value) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Double.hashCode(value);
+        }
+    }
+
+    // ----------- STATIC METHODS -----------
+
+    public static boolean areFeetEqual(double a, double b) {
+        Feet f1 = new Feet(a);
+        Feet f2 = new Feet(b);
+        return f1.equals(f2);
+    }
+
+    public static boolean areInchesEqual(double a, double b) {
+        Inches i1 = new Inches(a);
+        Inches i2 = new Inches(b);
+        return i1.equals(i2);
+    }
+
+    // ----------- MAIN METHOD -----------
+
+    public static void main(String[] args) {
+
+        // Feet comparison
+        boolean feetResult = areFeetEqual(1.0, 1.0);
+        System.out.println("Feet Equal: " + feetResult);
+
+        // Inches comparison
+        boolean inchResult = areInchesEqual(1.0, 1.0);
+        System.out.println("Inches Equal: " + inchResult);
     }
 }
