@@ -1,74 +1,62 @@
 package main;
 
+enum LengthUnit {
+    FEET(12.0),          // base = inches
+    INCHES(1.0),
+    YARDS(36.0),         // 1 yard = 36 inches
+    CENTIMETERS(0.393701); // 1 cm = 0.393701 inches
+
+    private final double toInchesFactor;
+
+    LengthUnit(double toInchesFactor) {
+        this.toInchesFactor = toInchesFactor;
+    }
+
+    public double toInches(double value) {
+        return value * toInchesFactor;
+    }
+}
+
+class QuantityLength {
+    private final double value;
+    private final LengthUnit unit;
+
+    public QuantityLength(double value, LengthUnit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
+        this.value = value;
+        this.unit = unit;
+    }
+
+    private double toInches() {
+        return unit.toInches(value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof QuantityLength)) return false;
+
+        QuantityLength other = (QuantityLength) obj;
+
+        // Compare with tolerance for floating-point precision
+        double diff = Math.abs(this.toInches() - other.toInches());
+        return diff < 0.0001;
+    }
+}
+
 public class QuantityMeasurementApp {
-
-    // ----------- ENUM FOR UNITS -----------
-    public enum LengthUnit {
-        FEET(1.0),
-        INCH(1.0 / 12.0);  // 1 inch = 1/12 feet
-
-        private final double toFeetFactor;
-
-        LengthUnit(double toFeetFactor) {
-            this.toFeetFactor = toFeetFactor;
-        }
-
-        public double toFeet(double value) {
-            return value * toFeetFactor;
-        }
-    }
-
-    // ----------- GENERIC QUANTITY CLASS -----------
-    public static class Quantity {
-        private final double value;
-        private final LengthUnit unit;
-
-        public Quantity(double value, LengthUnit unit) {
-            if (unit == null) {
-                throw new IllegalArgumentException("Unit cannot be null");
-            }
-            this.value = value;
-            this.unit = unit;
-        }
-
-        // Convert to base unit (feet)
-        private double toFeet() {
-            return unit.toFeet(value);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-
-            // 1. Same reference
-            if (this == obj) return true;
-
-            // 2. Null or different type
-            if (obj == null || getClass() != obj.getClass()) return false;
-
-            // 3. Cast
-            Quantity other = (Quantity) obj;
-
-            // 4. Compare after conversion
-            return Double.compare(this.toFeet(), other.toFeet()) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return Double.hashCode(toFeet());
-        }
-    }
-
-    // ----------- MAIN METHOD -----------
     public static void main(String[] args) {
 
-        Quantity q1 = new Quantity(1.0, LengthUnit.FEET);
-        Quantity q2 = new Quantity(12.0, LengthUnit.INCH);
+        QuantityLength q1 = new QuantityLength(1.0, LengthUnit.YARDS);
+        QuantityLength q2 = new QuantityLength(3.0, LengthUnit.FEET);
 
-        System.out.println("Are equal? " + q1.equals(q2));
+        System.out.println("1 yard == 3 feet ? " + q1.equals(q2));
 
-        Quantity q3 = new Quantity(1.0, LengthUnit.INCH);
-        Quantity q4 = new Quantity(1.0, LengthUnit.INCH);
+        QuantityLength q3 = new QuantityLength(1.0, LengthUnit.CENTIMETERS);
+        QuantityLength q4 = new QuantityLength(0.393701, LengthUnit.INCHES);
 
-        System.out.println("Are equal? " + q3.equals(q4));
+        System.out.println("1 cm == 0.393701 inches ? " + q3.equals(q4));
     }
 }
