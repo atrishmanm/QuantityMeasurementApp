@@ -25,11 +25,12 @@ enum LengthUnit {
 }
 
 /**
- * Immutable value object
+ * Immutable Value Object
  */
 class QuantityLength {
     private final double value;
     private final LengthUnit unit;
+    private static final double EPS = 1e-6;
 
     public QuantityLength(double value, LengthUnit unit) {
         if (unit == null) throw new IllegalArgumentException("Unit cannot be null");
@@ -50,38 +51,46 @@ class QuantityLength {
         if (target == null) throw new IllegalArgumentException("Target unit null");
 
         double inches = toInches();
-        double converted = target.fromInches(inches);
-        return new QuantityLength(converted, target);
+        return new QuantityLength(target.fromInches(inches), target);
     }
 
-    /**
-     * UC6: Addition (instance method)
-     * Result in THIS object's unit
-     */
-    public QuantityLength add(QuantityLength other) {
-        if (other == null) throw new IllegalArgumentException("Other cannot be null");
-
-        double sumInches = this.toInches() + other.toInches();
-        double result = this.unit.fromInches(sumInches);
-
-        return new QuantityLength(result, this.unit);
-    }
-
-    /**
-     * Static addition with target unit
-     */
-    public static QuantityLength add(QuantityLength a, QuantityLength b, LengthUnit targetUnit) {
-        if (a == null || b == null) throw new IllegalArgumentException("Operands cannot be null");
-        if (targetUnit == null) throw new IllegalArgumentException("Target unit null");
+    // 🔥 UC7 CORE: Private helper (DRY)
+    private static QuantityLength addInternal(QuantityLength a,
+                                              QuantityLength b,
+                                              LengthUnit target) {
 
         double sumInches = a.toInches() + b.toInches();
-        double result = targetUnit.fromInches(sumInches);
+        double result = target.fromInches(sumInches);
 
-        return new QuantityLength(result, targetUnit);
+        return new QuantityLength(result, target);
     }
 
     /**
-     * Overloaded version (raw values)
+     * UC6 (backward compatible): result in first operand unit
+     */
+    public QuantityLength add(QuantityLength other) {
+        if (other == null) throw new IllegalArgumentException("Other null");
+        return addInternal(this, other, this.unit);
+    }
+
+    /**
+     * UC7: explicit target unit (MAIN METHOD)
+     */
+    public static QuantityLength add(QuantityLength a,
+                                    QuantityLength b,
+                                    LengthUnit targetUnit) {
+
+        if (a == null || b == null)
+            throw new IllegalArgumentException("Operands cannot be null");
+
+        if (targetUnit == null)
+            throw new IllegalArgumentException("Target unit cannot be null");
+
+        return addInternal(a, b, targetUnit);
+    }
+
+    /**
+     * Overloaded version (raw inputs)
      */
     public static QuantityLength add(double v1, LengthUnit u1,
                                      double v2, LengthUnit u2,
@@ -98,7 +107,7 @@ class QuantityLength {
         if (!(obj instanceof QuantityLength)) return false;
 
         QuantityLength other = (QuantityLength) obj;
-        return Math.abs(this.toInches() - other.toInches()) < 1e-6;
+        return Math.abs(this.toInches() - other.toInches()) < EPS;
     }
 
     @Override
@@ -108,7 +117,7 @@ class QuantityLength {
 }
 
 /**
- * Demo API class
+ * Demo App
  */
 public class QuantityMeasurementApp {
 
@@ -123,14 +132,19 @@ public class QuantityMeasurementApp {
         );
 
         System.out.println(
-            new QuantityLength(12.0, LengthUnit.INCHES)
-                .add(new QuantityLength(1.0, LengthUnit.FEET))
+            QuantityLength.add(
+                new QuantityLength(1.0, LengthUnit.FEET),
+                new QuantityLength(12.0, LengthUnit.INCHES),
+                LengthUnit.INCHES
+            )
         );
 
         System.out.println(
-            QuantityLength.add(1.0, LengthUnit.YARDS,
-                               3.0, LengthUnit.FEET,
-                               LengthUnit.YARDS)
+            QuantityLength.add(
+                new QuantityLength(1.0, LengthUnit.FEET),
+                new QuantityLength(12.0, LengthUnit.INCHES),
+                LengthUnit.YARDS
+            )
         );
     }
 }
